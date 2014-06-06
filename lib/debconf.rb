@@ -1,0 +1,5 @@
+require "debconf/version"
+require "debconf/wizard"
+require "debconf/dialog"
+require "debconf/driver"
+require "debconf/step"
