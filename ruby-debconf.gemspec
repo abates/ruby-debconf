@@ -1,11 +1,11 @@
 # coding: utf-8
 lib = File.expand_path('../lib', __FILE__)
 $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
-require 'ruby/debconf/version'
+require 'debconf/version'
 
 Gem::Specification.new do |spec|
   spec.name          = "ruby-debconf"
-  spec.version       = Ruby::Debconf::VERSION
+  spec.version       = Debconf::VERSION
   spec.authors       = ["Andrew Bates"]
   spec.email         = ["abates@omeganetserv.com"]
   spec.description   = %q{Simple Ruby interface to debconf}
