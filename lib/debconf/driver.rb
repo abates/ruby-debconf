@@ -81,7 +81,7 @@ module Debconf
     end
 
     def register template, question
-      (retval, text) = execute("REGISTER", "#{@prefix}/#{template}", "#{@prefix}/#{template}")
+      (retval, text) = execute("REGISTER", "#{@prefix}/#{template}", "#{@prefix}/#{question}")
       if (retval == 0)
         return :success
       end
