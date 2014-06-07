@@ -79,5 +79,13 @@ module Debconf
       end
       raise "Error #{retval}: #{text}"
     end
+
+    def register template, question
+      (retval, text) = execute("REGISTER", "#{@prefix}/#{template}", "#{@prefix}/#{template}")
+      if (retval == 0)
+        return :success
+      end
+      raise "Error #{retval}: #{text}"
+    end
   end
 end
