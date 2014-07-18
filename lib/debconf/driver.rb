@@ -15,10 +15,20 @@
 #
 module Debconf
   class Driver
-    def initialize(instream=STDIN, outstream=STDOUT, input_prefix)
+    def initialize(instream=nil, outstream=nil)
+      if (instream.nil?)
+        instream = STDIN
+        outstream = STDOUT
+        if (ENV['DEBIAN_HAS_FRONTEND'].nil?)
+          if (ENV["DEBCONF_USE_CDEBCONF"])
+            exec("/usr/lib/cdebconf/debconf", $0, *ARGV)
+          else
+            exec("/usr/share/debconf/frontend", $0, *ARGV)
+          end
+        end
+      end
       @instream = instream
       @outstream = outstream
-      @prefix = input_prefix
     end
 
     def execute(*args)
@@ -42,30 +52,49 @@ module Debconf
     end
 
     def input priority, question
-      (retval, text) = execute("INPUT", priority,  "#{@prefix}/#{question}")
-      if (retval == 30)
+      (code, msg) = execute("INPUT", priority,  "#{question}")
+      case code
+      when 0
+        return :ok
+      when 30
         return :skipped
-      elsif (retval == 0)
-        return :success
       else
-        raise "Error #{retval}: #{text}"
+        raise "Error #{code}: #{msg}"
       end
     end
 
-    def begin_block
+    def block &blk
       execute("BEGINBLOCK")
-    end
-
-    def end_block
+      blk.call
       execute("ENDBLOCK")
     end
 
+    def set question, value
+      (code, value) = execute("SET #{question} #{value}")
+      if (code == 0)
+        return :ok
+      end
+      raise "Error #{retval}: #{value}"
+    end
+
     def get question
-      execute("GET #{@prefix}/#{question}")
+      (code, value) = execute("GET #{question}")
+      if (code == 0)
+        return "#{value}"
+      end
+      raise "Error #{retval}: #{value}"
     end
 
     def go
-      execute("GO")
+      (code, msg) = execute("GO")
+      case code
+      when 0
+        return :ok
+      when 30
+        return :skipped
+      else
+        raise "Error #{code}: #{msg}"
+      end
     end
     
     def clear
@@ -73,17 +102,17 @@ module Debconf
     end
 
     def subst question, key, value
-      (retval, text) = execute("SUBST", "#{@prefix}/#{question}", key, value)
+      (retval, text) = execute("SUBST", "#{question}", key, value)
       if (retval == 0)
-        return :success
+        return :ok
       end
       raise "Error #{retval}: #{text}"
     end
 
     def register template, question
-      (retval, text) = execute("REGISTER", "#{@prefix}/#{template}", "#{@prefix}/#{question}")
+      (retval, text) = execute("REGISTER", "#{template}", "##{question}")
       if (retval == 0)
-        return :success
+        return :ok
       end
       raise "Error #{retval}: #{text}"
     end

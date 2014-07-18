@@ -16,39 +16,26 @@
 
 module Debconf
   class Step
-    attr_accessor :next_step, :default_next_step
-
-    def initialize(config, debconf, name, block)
-      @debconf = debconf
+    def initialize name
       @name = name
-      @block = block
-      @config = config
+      @transitions = {}
     end
 
-    def next step=nil, &block
-      if (step.nil? && block.nil?)
-        raise "Either the next step or a block must be given"
-      end
-      if (step)
-        @next_step = step
-      else
-        @next_step = block.call(@config)
-      end
+    def on event, next_step
+      @transitions[event] = next_step
     end
 
-    def dialog title, &block
-      raise "Dialog requires a block" if (block.nil?)
-      d = Dialog.new(@config, @debconf, title)
-      block.call(d)
-      @retval = d.show
+    def transition event
+      raise "No defined transition for #{event} in step #{@name}" unless @transitions[event]
+      @transitions[event]
     end
 
-    def execute
-      @next_step = @default_next_step
-      unless (@block.nil?)
-        @block.call(self)
-      end
-      return @retval
+    def execute debconf_driver
+      @dialog.show(debconf_driver)
+    end
+
+    def dialog dialog
+      @dialog = dialog
     end
   end
 end

@@ -16,40 +16,66 @@
 
 module Debconf
   class Dialog
-    attr_reader :retval
-    def initialize config, debconf, title
-      @debconf = debconf
-      @debconf.title(title)
-      @debconf.begin_block()
-      @questions = []
-      @config = config
+    def self.title title=nil
+      @title = @title || title
     end
 
-    def show
-      @debconf.end_block()
-      (retval, text) = @debconf.go()
-      if (retval == 0)
-        @questions.each do |question|
-          (retval, text) = @debconf.get(question)
-          if (retval == 0)
-            @config[question] = text
-          else
-            raise "Error #{retval}: Failed to retrieve #{question} from debconf: #{text}"
+    def self.inputs
+      @inputs || []
+    end
+
+    def self.input priority, name
+      @inputs ||= []
+      @inputs << [priority, name]
+    end
+
+    def self.validate field, error_template, validator
+      @validators ||= {}
+      @validators[field] = [error_template, validator]
+    end
+
+    def self.validators
+      @validators || {}
+    end
+
+    def show debconf_driver
+      config = {}
+      done = false
+      while (! done)
+        debconf_driver.title(self.class.title)
+        debconf_driver.block do
+          self.class.inputs.each do |priority, name|
+            if (respond_to?("#{name}_subst".to_sym))
+              substitutions = send("#{name}_subst".to_sym)
+              substitutions.each do |key, value|
+                debconf_driver.subst(name, key, value)
+              end
+            end
+            if (respond_to?("#{name}_value".to_sym))
+              value = send("#{name}_value".to_sym)
+              debconf_driver.set(name, value)
+            end
+            debconf_driver.input(priority, name)
           end
         end
-        return :next
-      elsif (retval == 30)
-        return :previous
+        debconf_driver.go
+        done = true
+        self.class.inputs.each do |priority, name|
+          value = debconf_driver.get(name)
+          if (self.class.validators[name])
+            if (send(self.class.validators[name][1], value))
+              config[name] = value
+            else
+              debconf_driver.input('critical', self.class.validators[name][0])
+              debconf_driver.go
+              done = false
+            end
+          else
+            config[name] = value
+          end
+        end
       end
-      raise "Dialog failed with error #{retval}: #{text}"
-    end
-
-    def input priority, question, substitusions={}
-      @questions.push(question)
-      substitusions.each do |key, value|
-        @debconf.subst(question, key, value)
-      end
-      @debconf.input(priority, question)
+      config
     end
   end
 end

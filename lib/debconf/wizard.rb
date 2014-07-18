@@ -14,129 +14,67 @@
 # the License.
 #
 
+require 'debconf/driver'
+require 'debconf/step'
+
 module Debconf
   class Wizard
-    attr_reader :config
+    attr_reader :current_step, :breadcrumbs
 
-    def self.wizard &block
-      raise "Wizard requires a block!" if (block.nil?)
-      @@wizard_block = block
-    end
-
-    def initialize prefix
-      if (ENV['DEBIAN_HAS_FRONTEND'].nil?)
-        if (ENV["DEBCONF_USE_CDEBCONF"])
-          exec("/usr/lib/cdebconf/debconf", $0, *ARGV)
-        else
-          exec("/usr/share/debconf/frontend", $0, *ARGV)
-        end
+    def self.sequence &block
+      if (@debconf_steps.nil?)
+        @debconf_steps = {}
+        @debconf_first_step = nil
       end
-      @debconf = Driver.new(STDIN, STDOUT, prefix)
-      @first_step = nil
-      @last_step = nil
-      @steps = {}
-      @config = {}
-      instance_eval(&@@wizard_block)
+      block.call
     end
 
-    def step name, &block
-      @config[name] ||= {}
-      next_step = Step.new(@config[name], @debconf, name, block)
-      @first_step ||= name
-      @steps[name] = next_step 
-      if (@last_step)
-        @last_step.default_next_step = name
+    def self.step step_name, &block
+      raise "Duplicate step names are not allowed" if (@debconf_steps[step_name])
+      @debconf_first_step = step_name if (@debconf_steps.length == 0)
+      step = Debconf::Step.new(step_name)
+      @debconf_steps[step_name] = step
+      block.call(step)
+    end
+
+    def self.debconf_steps
+      @debconf_steps
+    end
+
+    def self.debconf_first_step
+      @debconf_first_step
+    end
+
+    def initialize debconf_driver=nil
+      @current_step = self.class.debconf_first_step
+      @breadcrumbs = []
+      @debconf_driver = debconf_driver || Debconf::Driver.new
+    end
+
+    def next!
+      transition!(:next)
+    end
+
+    def previous!
+      transition!(:previous)
+    end
+
+    def transition! event
+      previous_step = @current_step
+      if (event == :last)
+        @current_step = :last
+      else
+        step = self.class.debconf_steps[@current_step]
+        @current_step = step.transition(event)
       end
-      @last_step = next_step
+      @breadcrumbs << previous_step
     end
 
-    def execute
-      step = @first_step
-      steps = []
-      while (step != :last)
-        retval = @steps[step].execute
-        if (retval == :next)
-          steps.push(step)
-          step = @steps[step].next_step
-        elsif (retval == :previous)
-          step = steps.pop
-        else
-          raise "Unknown return value #{retval}"
-        end
+    def execute!
+      while (@current_step != :last)
+        event = self.class.debconf_steps[@current_step].execute(@debconf_driver)
+        transition!(event)
       end
     end
   end
-end
-
-class NVSetup < Debconf::Wizard
-  def initialize
-    super("netvistra-setup")
-    @interfaces = ["eth0", "eth1", "eth2"]
-  end
-
-  wizard do 
-    step(:primary_if_select) do |s|
-      s.dialog("Select Primary Network Interface") do |d|
-        d.input(:critical, :primary_interface, :iflist => @interfaces.join(', '))
-      end
-    end
-
-    step(:primary_if_protocol) do |s|
-      s.dialog("#{config[:primary_if_select][:interface]} Configuration Protocol") do |d|
-        d.input(:critical, :protocol)
-      end
-      s.next do |config|
-        if (config[:protocol] == 'dhcp')
-          :cluster_if_select
-        elsif (config[:protocol] == 'static')
-          :configure_primary_static
-        else
-          raise "Unknown configuration protocol #{config[:primary_if_protocol]}"
-        end
-      end
-    end 
-
-    step(:configure_primary_static) do |s|
-      s.dialog("Configure Interface #{config[:primary_if_select][:interface]}") do |d|
-        d.input(:critical, :ip_address)
-        d.input(:critical, :netmask)
-        d.input(:critical, :gateway)
-        d.input(:critical, :nameservers)
-      end
-    end
-
-    step(:cluster_if_select) do |s|
-      s.dialog("Select Cluster Network Interface") do |d|
-        d.input(:critical, :cluster_interface, :iflist => @interfaces.join(', '))
-      end
-      s.next do |cluster_config|
-        if (config[:primary_if_select][:primary_interface] != cluster_config[:cluster_interface])
-          :cluster_if_protocol
-        else
-          :last
-        end
-      end
-    end
-
-    step(:cluster_if_protocol) do |s|
-      s.dialog("#{config[:cluster_if_select][:interface]} Configuration Protocol") do |d|
-        d.input(:critical, :protocol)
-      end
-      s.next do |config|
-        if (config[:protocol] == 'dhcp')
-          :last
-        elsif (config[:protocol] == 'static')
-          :configure_cluster_static
-        else
-          raise "Unknown configuration protocol #{config[:primary_if_protocol]}"
-        end
-      end
-    end
-    step(:configure_cluster_static) do |s|
-      s.dialog("Configure Interface #{config[:cluster_if_select][:interface]}") do |d|
-        d.input(:critical, :ip_address)
-        d.input(:critical, :netmask)
-      end
-    end
-  end 
 end
