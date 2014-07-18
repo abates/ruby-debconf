@@ -38,13 +38,19 @@ module Debconf
       @validators || {}
     end
 
+    def initialize options={}
+      @title = options[:title]
+      @prefix = options[:prefix]
+    end
+
     def show debconf_driver
       config = {}
       done = false
       while (! done)
-        debconf_driver.title(self.class.title)
+        debconf_driver.title(@title || self.class.title)
         debconf_driver.block do
           self.class.inputs.each do |priority, name|
+            name = "#{@prefix}/#{name}" unless (@prefix.nil?)
             if (respond_to?("#{name}_subst".to_sym))
               substitutions = send("#{name}_subst".to_sym)
               substitutions.each do |key, value|
@@ -61,12 +67,14 @@ module Debconf
         config[:code] = debconf_driver.go
         done = true
         self.class.inputs.each do |priority, name|
-          value = debconf_driver.get(name)
+          prefixed_name = @prefix.nil? ? name : "#{@prefix}/#{name}"
+          value = debconf_driver.get(prefixed_name)
           if (self.class.validators[name])
             if (send(self.class.validators[name][1], value))
               config[name] = value
             else
-              debconf_driver.input('critical', self.class.validators[name][0])
+              error_template = @prefix.nil? ? self.class.validators[name][0] : "#{@prefix}/#{self.class.validators[name][0]}"
+              debconf_driver.input('critical', error_template)
               debconf_driver.go
               done = false
             end

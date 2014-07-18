@@ -141,4 +141,41 @@ class DialogTest < Test::Unit::TestCase
     ], driver.debconf_stub.rx_cmds)
   end
 
+  class Dialog5 < Debconf::Dialog
+    title "Dialog Title"
+  end
+
+  def test_overriding_dialog_title
+    driver = StubbedDriver.new
+    dialog = Dialog5.new(title: 'Different Dialog Title')
+    dialog.show(driver)
+
+    assert_equal([
+      "TITLE Different Dialog Title", 
+      "BEGINBLOCK", 
+      "ENDBLOCK", 
+      "GO",
+    ], driver.debconf_stub.rx_cmds)
+  end
+
+  class Dialog6 < Debconf::Dialog
+    title "Dialog Title"
+    input :critical, 'input1'
+  end
+
+  def test_input_prefixes
+    driver = StubbedDriver.new
+    dialog = Dialog6.new(prefix: 'test')
+    dialog.show(driver)
+
+    assert_equal([
+      "TITLE Dialog Title", 
+      "BEGINBLOCK", 
+      "INPUT critical test/input1",
+      "ENDBLOCK", 
+      "GO",
+      "GET test/input1"
+    ], driver.debconf_stub.rx_cmds)
+  end
+
 end
