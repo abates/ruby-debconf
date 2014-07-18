@@ -19,7 +19,7 @@ require 'debconf/step'
 
 module Debconf
   class Wizard
-    attr_reader :current_step, :breadcrumbs
+    attr_reader :config, :current_step, :breadcrumbs
 
     def self.sequence &block
       if (@debconf_steps.nil?)
@@ -49,14 +49,7 @@ module Debconf
       @current_step = self.class.debconf_first_step
       @breadcrumbs = []
       @debconf_driver = debconf_driver || Debconf::Driver.new
-    end
-
-    def next!
-      transition!(:next)
-    end
-
-    def previous!
-      transition!(:previous)
+      @config = {}
     end
 
     def transition! event
@@ -72,8 +65,11 @@ module Debconf
 
     def execute!
       while (@current_step != :last)
-        event = self.class.debconf_steps[@current_step].execute(@debconf_driver)
-        transition!(event)
+        config = self.class.debconf_steps[@current_step].execute(@debconf_driver)
+        if (config[:code] != :previous)
+          @config[@current_step] = config
+        end
+        transition!(config[:code])
       end
     end
   end

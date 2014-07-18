@@ -42,8 +42,11 @@ class DebconfStub
         arguments.each do |argument|
           case argument
           when 'backup'
+            @rx_cmds.pop
           when 'escape'
+            @rx_cmds.pop
           when 'multiselect'
+            @rx_cmds.pop
           else
             @tx_cmd_str = "10 Unknown capability #{argument}"
           end

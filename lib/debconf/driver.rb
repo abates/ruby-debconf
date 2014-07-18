@@ -29,6 +29,7 @@ module Debconf
       end
       @instream = instream
       @outstream = outstream
+      capabilities('backup')
     end
 
     def execute(*args)
@@ -37,6 +38,14 @@ module Debconf
       (status, text) = @instream.gets.rstrip.split(/\s+/, 2)
       status = status.to_i
       return [status, text]
+    end
+
+    def capabilities(*capabilities)
+      (code, msg) = execute('CAPB', *capabilities)
+      if (code == 0)
+        return :ok
+      end
+      raise "Error #{code}: #{msg}"
     end
 
     def settitle t
@@ -89,9 +98,9 @@ module Debconf
       (code, msg) = execute("GO")
       case code
       when 0
-        return :ok
+        return :next
       when 30
-        return :skipped
+        return :previous
       else
         raise "Error #{code}: #{msg}"
       end

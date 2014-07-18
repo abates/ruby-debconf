@@ -6,14 +6,14 @@ class WizardExecutionTest < Test::Unit::TestCase
   class Step1Dialog < Debconf::Dialog
     def show debconf_driver
       super(debconf_driver)
-      :ok
+      { code: :ok }
     end
   end
 
   class Step2Dialog < Debconf::Dialog
     def show debconf_driver
       super(debconf_driver)
-      :cancel
+      { code: :cancel }
     end
   end
 
@@ -36,12 +36,12 @@ class WizardExecutionTest < Test::Unit::TestCase
 
   def test_breadcrumbs
     wizard = TestWizard.new(StubbedDriver.new)
-    wizard.next!
-    wizard.previous!
-    wizard.next!
-    wizard.previous!
-    wizard.next!
-    wizard.next!
+    wizard.transition!(:next)
+    wizard.transition!(:previous)
+    wizard.transition!(:next)
+    wizard.transition!(:previous)
+    wizard.transition!(:next)
+    wizard.transition!(:next)
     assert_equal [:step1, :step2, :step1, :step2, :step1, :step2], wizard.breadcrumbs
   end
 

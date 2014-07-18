@@ -32,6 +32,7 @@ class DialogTest < Test::Unit::TestCase
     dialog = Dialog1.new
     values = dialog.show(driver)
     assert_equal({
+      code: :next,
       'input1' => '',
       'input2' => '',
     }, values)
@@ -41,6 +42,7 @@ class DialogTest < Test::Unit::TestCase
 
     values = dialog.show(driver)
     assert_equal({
+      code: :next,
       'input1' => 'value1',
       'input2' => 'value2',
     }, values)

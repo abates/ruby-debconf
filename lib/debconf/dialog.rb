@@ -58,7 +58,7 @@ module Debconf
             debconf_driver.input(priority, name)
           end
         end
-        debconf_driver.go
+        config[:code] = debconf_driver.go
         done = true
         self.class.inputs.each do |priority, name|
           value = debconf_driver.get(name)
