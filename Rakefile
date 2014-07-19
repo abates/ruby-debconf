@@ -4,6 +4,7 @@ require "rake/testtask"
 
 desc "Build the gem and package it as a deb file"
 task :build_deb do
+  ENV['DH_RUBY_IGNORE_TESTS'] = 'all'
   file_name = File.basename(Bundler::GemHelper.instance.build_gem)
   Dir.chdir("pkg")
   `gem2deb #{file_name}`
