@@ -86,7 +86,7 @@ class DialogTest < Test::Unit::TestCase
     end
   end
 
-  def test_dialog_substitutions
+  def test_dialog_value
     driver = StubbedDriver.new
     dialog = Dialog3.new
     dialog.show(driver)
@@ -171,6 +171,31 @@ class DialogTest < Test::Unit::TestCase
     assert_equal([
       "TITLE Dialog Title", 
       "BEGINBLOCK", 
+      "INPUT critical test/input1",
+      "ENDBLOCK", 
+      "GO",
+      "GET test/input1"
+    ], driver.debconf_stub.rx_cmds)
+  end
+
+  class Dialog7 < Debconf::Dialog
+    title "Dialog Title"
+    input :critical, 'input1'
+
+    def input1_subst
+      { 'key1' => 'value1' }
+    end
+  end
+
+  def test_prefix_substitutions
+    driver = StubbedDriver.new
+    dialog = Dialog7.new(prefix: 'test')
+    dialog.show(driver)
+
+    assert_equal([
+      "TITLE Dialog Title", 
+      "BEGINBLOCK", 
+      "SUBST test/input1 key1 value1",
       "INPUT critical test/input1",
       "ENDBLOCK", 
       "GO",

@@ -50,18 +50,18 @@ module Debconf
         debconf_driver.title(@title || self.class.title)
         debconf_driver.block do
           self.class.inputs.each do |priority, name|
-            name = "#{@prefix}/#{name}" unless (@prefix.nil?)
+            prefixed_name = @prefix.nil? ? name : "#{@prefix}/#{name}"
             if (respond_to?("#{name}_subst".to_sym))
               substitutions = send("#{name}_subst".to_sym)
               substitutions.each do |key, value|
-                debconf_driver.subst(name, key, value)
+                debconf_driver.subst(prefixed_name, key, value)
               end
             end
             if (respond_to?("#{name}_value".to_sym))
               value = send("#{name}_value".to_sym)
-              debconf_driver.set(name, value)
+              debconf_driver.set(prefixed_name, value)
             end
-            debconf_driver.input(priority, name)
+            debconf_driver.input(priority, prefixed_name)
           end
         end
         config[:code] = debconf_driver.go
