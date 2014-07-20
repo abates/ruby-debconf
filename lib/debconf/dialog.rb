@@ -21,12 +21,14 @@ module Debconf
     end
 
     def self.inputs
-      @inputs || []
+      @inputs ||= []
+      return [superclass.respond_to?(:inputs) ? superclass.send(:inputs) : [], @inputs].flatten
+      #[@inputs || [], superclass.respond_to?(:inputs) ? superclass.send(:inputs) : []].flatten
     end
 
     def self.input priority, name
       @inputs ||= []
-      @inputs << [priority, name]
+      @inputs << { priority: priority, name: name }
     end
 
     def self.validate field, error_template, validator
@@ -49,7 +51,9 @@ module Debconf
       while (! done)
         debconf_driver.title(@title || self.class.title)
         debconf_driver.block do
-          self.class.inputs.each do |priority, name|
+          self.class.inputs.each do |input|
+            priority = input[:priority]
+            name = input[:name]
             prefixed_name = @prefix.nil? ? name : "#{@prefix}/#{name}"
             if (respond_to?("#{name}_subst".to_sym))
               substitutions = send("#{name}_subst".to_sym)
@@ -66,7 +70,9 @@ module Debconf
         end
         config[:code] = debconf_driver.go
         done = true
-        self.class.inputs.each do |priority, name|
+        self.class.inputs.each do |input|
+          priority = input[:priority]
+          name = input[:name]
           prefixed_name = @prefix.nil? ? name : "#{@prefix}/#{name}"
           value = debconf_driver.get(prefixed_name)
           if (self.class.validators[name])

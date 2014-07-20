@@ -203,4 +203,27 @@ class DialogTest < Test::Unit::TestCase
     ], driver.debconf_stub.rx_cmds)
   end
 
+  class Dialog8 < Dialog7
+    title "Dialog Title"
+    input :critical, 'input2'
+  end
+
+  def test_dialog_inheritance
+    driver = StubbedDriver.new
+    dialog = Dialog8.new
+    dialog.show(driver)
+
+    assert_equal([
+      "TITLE Dialog Title", 
+      "BEGINBLOCK", 
+      "SUBST input1 key1 value1",
+      "INPUT critical input1",
+      "INPUT critical input2",
+      "ENDBLOCK", 
+      "GO",
+      "GET input1",
+      "GET input2"
+    ], driver.debconf_stub.rx_cmds)
+  end
+
 end
