@@ -60,18 +60,23 @@ module Debconf
 
     def transition! event
       previous_step = @current_step
-      case event
-      when :next
-        @current_step = self.class.next(@current_step)
-      when :previous
-        @current_step = @breadcrumbs.pop || :last
-      when :last
-        @current_step = :last
-      else
-        step = self.class.debconf_steps[@current_step]
-        @current_step = step.transition(event)
+      step = self.class.debconf_steps[@current_step]
+      @current_step = step.transition(event)
+      if (self.class.debconf_steps[@current_step].nil?)
+        case @current_step
+        when :next
+          @current_step = self.class.next(previous_step)
+        when :previous
+          @current_step = (@breadcrumbs.last || :last)
+        when :last
+          @current_step = :last
+        end
       end
-      @breadcrumbs << previous_step unless (event == :previous)
+      if (event == :previous)
+        @breadcrumbs.pop
+      else
+        @breadcrumbs << previous_step
+      end
     end
 
     def execute!

@@ -26,8 +26,13 @@ module Debconf
     end
 
     def transition event
-      raise "No defined transition for #{event} in step #{@name}" unless @transitions[event]
-      @transitions[event]
+      if (@transitions[event])
+        return @transitions[event]
+      elsif ([:next, :previous, :last].include?(event))
+        return event
+      else
+        raise "No defined transition for #{event} in step #{@name}"
+      end
     end
 
     def execute debconf_driver

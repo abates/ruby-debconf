@@ -28,8 +28,15 @@ class WizardExecutionTest < Test::Unit::TestCase
 
       step(:step2) do |step|
         step.dialog(Step2Dialog.new)
-        step.on(:next, :last)
+        step.on(:next, :step3)
         step.on(:previous, :step1)
+        step.on(:cancel, :last)
+      end
+
+      step(:step3) do |step|
+        step.dialog(Step2Dialog.new)
+        step.on(:next, :last)
+        step.on(:previous, :step2)
         step.on(:cancel, :last)
       end
     end
@@ -40,6 +47,7 @@ class WizardExecutionTest < Test::Unit::TestCase
     wizard.transition!(:next)
     wizard.transition!(:next)
     assert_equal [:step1, :step2], wizard.breadcrumbs
+    assert_equal :step3, wizard.current_step
 
     wizard.transition!(:previous)
     assert_equal [:step1], wizard.breadcrumbs
