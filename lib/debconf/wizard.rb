@@ -22,10 +22,9 @@ module Debconf
     attr_reader :config, :current_step, :breadcrumbs
 
     def self.sequence &block
-      if (@debconf_steps.nil?)
-        @debconf_steps = {}
-        @debconf_first_step = nil
-      end
+      @debconf_steps = {}
+      @debconf_first_step = nil
+      @debconf_sequence = {}
       block.call
     end
 
@@ -35,6 +34,13 @@ module Debconf
       step = Debconf::Step.new(step_name)
       @debconf_steps[step_name] = step
       block.call(step)
+
+      @debconf_sequence[@last_defined_step] = step_name unless (@last_defined_step.nil?)
+      @last_defined_step = step_name
+    end
+
+    def self.next current
+      @debconf_sequence[current]
     end
 
     def self.debconf_steps
@@ -54,13 +60,18 @@ module Debconf
 
     def transition! event
       previous_step = @current_step
-      if (event == :last)
+      case event
+      when :next
+        @current_step = self.class.next(@current_step)
+      when :previous
+        @current_step = @breadcrumbs.pop || :last
+      when :last
         @current_step = :last
       else
         step = self.class.debconf_steps[@current_step]
         @current_step = step.transition(event)
       end
-      @breadcrumbs << previous_step
+      @breadcrumbs << previous_step unless (event == :previous)
     end
 
     def execute!

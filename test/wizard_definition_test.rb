@@ -37,14 +37,4 @@ class WizardDefinitionTest < Test::Unit::TestCase
     wizard = TestWizard.new(StubbedDriver.new)
     assert_equal :step1, wizard.current_step
   end
-
-=begin
-  def test_sequence
-    wizard = TestWizard.new(StubbedDriver.new)
-    wizard.next!
-    assert_equal :step2, wizard.current_step
-    wizard.previous!
-    assert_equal :step1, wizard.current_step
-  end
-=end
 end
