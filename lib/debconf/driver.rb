@@ -35,8 +35,13 @@ module Debconf
     def execute(*args)
       @outstream.puts("#{args.join(' ')}")
       @outstream.flush
-      (status, text) = @instream.gets.rstrip.split(/\s+/, 2)
-      status = status.to_i
+      if (args[0] != 'STOP')
+        (status, text) = @instream.gets.rstrip.split(/\s+/, 2)
+        status = status.to_i
+      else
+        status = 0
+        text = 'OK'
+      end
       return [status, text]
     end
 
