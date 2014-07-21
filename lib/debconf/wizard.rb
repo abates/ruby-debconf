@@ -84,6 +84,21 @@ module Debconf
         code = self.class.debconf_steps[@current_step].execute(@debconf_driver, self)
         transition!(code)
       end
+      @debconf_driver.stop
+    end
+
+    def [] key
+      key_parts = key.split(/\//)
+      last_key = key_parts.pop
+      config = @config
+      key_parts.each do |key|
+        if (config.respond_to?('[]') && !config[key].nil?)
+          config = config[key]
+        else
+          return nil
+        end
+      end
+      return config[last_key]
     end
 
     def []= key, value

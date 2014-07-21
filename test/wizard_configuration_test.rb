@@ -25,7 +25,45 @@ class WizardConfigurationTest < Test::Unit::TestCase
     end
   end
 
-  def test_configuration
+  def test_configuration_hierarchy
+    driver = StubbedDriver.new
+    driver.debconf_stub.input_values['test/step1/input1'] = '1'
+    driver.debconf_stub.input_values['test/step1/input2'] = '2'
+    driver.debconf_stub.input_values['test/step2/input1'] = '3'
+    driver.debconf_stub.input_values['test/step2/input2'] = '4'
+
+    wizard = TestWizard.new(driver)
+    wizard.execute!
+    assert_equal({
+      'test' => {
+        'step1' => {
+          'input1' => '1',
+          'input2' => '2',
+        },
+        'step2' => {
+          'input1' => '3',
+          'input2' => '4',
+        }
+      }
+    }, wizard.config)
+  end
+
+  def test_configuration_get
+    driver = StubbedDriver.new
+    driver.debconf_stub.input_values['test/step1/input1'] = '1'
+    driver.debconf_stub.input_values['test/step1/input2'] = '2'
+    driver.debconf_stub.input_values['test/step2/input1'] = '3'
+    driver.debconf_stub.input_values['test/step2/input2'] = '4'
+
+    wizard = TestWizard.new(driver)
+    wizard.execute!
+    assert_equal(wizard['test/step1/input1'], '1')
+    assert_equal(wizard['test/step1/input2'], '2')
+    assert_equal(wizard['test/step2/input1'], '3')
+    assert_equal(wizard['test/step2/input2'], '4')
+  end
+
+  def test_configuration_hierarchy
     driver = StubbedDriver.new
     driver.debconf_stub.input_values['test/step1/input1'] = '1'
     driver.debconf_stub.input_values['test/step1/input2'] = '2'
