@@ -81,12 +81,20 @@ module Debconf
 
     def execute!
       while (@current_step != :last)
-        config = self.class.debconf_steps[@current_step].execute(@debconf_driver)
-        if (config[:code] != :previous)
-          @config[@current_step] = config
-        end
-        transition!(config[:code])
+        code = self.class.debconf_steps[@current_step].execute(@debconf_driver, self)
+        transition!(code)
       end
+    end
+
+    def []= key, value
+      key_parts = key.split(/\//)
+      last_key = key_parts.pop
+      config = @config
+      key_parts.each do |key|
+        config[key] ||= {}
+        config = config[key]
+      end
+      config[last_key] = value 
     end
   end
 end

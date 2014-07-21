@@ -13,7 +13,7 @@ class DialogTest < Test::Unit::TestCase
   def test_dialog_commands
     driver = StubbedDriver.new
     dialog = Dialog1.new
-    dialog.show(driver)
+    dialog.show(driver, {})
 
     assert_equal([
       "TITLE Dialog Title", 
@@ -30,9 +30,10 @@ class DialogTest < Test::Unit::TestCase
   def test_dialog_return_values
     driver = StubbedDriver.new
     dialog = Dialog1.new
-    values = dialog.show(driver)
+    values = {}
+    code = dialog.show(driver, values)
+    assert_equal(:next, code)
     assert_equal({
-      code: :next,
       'input1' => '',
       'input2' => '',
     }, values)
@@ -40,9 +41,10 @@ class DialogTest < Test::Unit::TestCase
     driver.debconf_stub.input_values['input1'] = 'value1'
     driver.debconf_stub.input_values['input2'] = 'value2'
 
-    values = dialog.show(driver)
+    values = {}
+    code = dialog.show(driver, values)
+    assert_equal(:next, code)
     assert_equal({
-      code: :next,
       'input1' => 'value1',
       'input2' => 'value2',
     }, values)
@@ -63,7 +65,7 @@ class DialogTest < Test::Unit::TestCase
   def test_dialog_substitutions
     driver = StubbedDriver.new
     dialog = Dialog2.new
-    dialog.show(driver)
+    dialog.show(driver, {})
 
     assert_equal([
       "TITLE Dialog Title", 
@@ -89,7 +91,7 @@ class DialogTest < Test::Unit::TestCase
   def test_dialog_value
     driver = StubbedDriver.new
     dialog = Dialog3.new
-    dialog.show(driver)
+    dialog.show(driver, {})
 
     assert_equal([
       "TITLE Dialog Title", 
@@ -121,7 +123,7 @@ class DialogTest < Test::Unit::TestCase
     driver.debconf_stub.input_values['correct value']
 
     dialog = Dialog4.new
-    dialog.show(driver)
+    dialog.show(driver, {})
 
     assert_equal([
       "TITLE Dialog Title", 
@@ -148,7 +150,7 @@ class DialogTest < Test::Unit::TestCase
   def test_overriding_dialog_title
     driver = StubbedDriver.new
     dialog = Dialog5.new(title: 'Different Dialog Title')
-    dialog.show(driver)
+    dialog.show(driver, {})
 
     assert_equal([
       "TITLE Different Dialog Title", 
@@ -166,7 +168,7 @@ class DialogTest < Test::Unit::TestCase
   def test_input_prefixes
     driver = StubbedDriver.new
     dialog = Dialog6.new(prefix: 'test')
-    dialog.show(driver)
+    dialog.show(driver, {})
 
     assert_equal([
       "TITLE Dialog Title", 
@@ -190,7 +192,7 @@ class DialogTest < Test::Unit::TestCase
   def test_prefix_substitutions
     driver = StubbedDriver.new
     dialog = Dialog7.new(prefix: 'test')
-    dialog.show(driver)
+    dialog.show(driver, {})
 
     assert_equal([
       "TITLE Dialog Title", 
@@ -211,7 +213,7 @@ class DialogTest < Test::Unit::TestCase
   def test_dialog_inheritance
     driver = StubbedDriver.new
     dialog = Dialog8.new
-    dialog.show(driver)
+    dialog.show(driver, {})
 
     assert_equal([
       "TITLE Dialog Title", 

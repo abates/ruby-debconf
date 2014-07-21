@@ -23,7 +23,6 @@ module Debconf
     def self.inputs
       @inputs ||= []
       return [superclass.respond_to?(:inputs) ? superclass.send(:inputs) : [], @inputs].flatten
-      #[@inputs || [], superclass.respond_to?(:inputs) ? superclass.send(:inputs) : []].flatten
     end
 
     def self.input priority, name
@@ -45,8 +44,8 @@ module Debconf
       @prefix = options[:prefix]
     end
 
-    def show debconf_driver
-      config = {}
+    def show debconf_driver, wizard_duck
+      code = nil
       done = false
       while (! done)
         debconf_driver.title(@title || self.class.title)
@@ -68,7 +67,7 @@ module Debconf
             debconf_driver.input(priority, prefixed_name)
           end
         end
-        config[:code] = debconf_driver.go
+        code = debconf_driver.go
         done = true
         self.class.inputs.each do |input|
           priority = input[:priority]
@@ -77,7 +76,7 @@ module Debconf
           value = debconf_driver.get(prefixed_name)
           if (self.class.validators[name])
             if (send(self.class.validators[name][1], value))
-              config[name] = value
+              wizard_duck[prefixed_name] = value
             else
               error_template = @prefix.nil? ? self.class.validators[name][0] : "#{@prefix}/#{self.class.validators[name][0]}"
               debconf_driver.input('critical', error_template)
@@ -85,11 +84,11 @@ module Debconf
               done = false
             end
           else
-            config[name] = value
+            wizard_duck[prefixed_name] = value
           end
         end
       end
-      config
+      code
     end
   end
 end

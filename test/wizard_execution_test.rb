@@ -5,16 +5,16 @@ require 'debconf/dialog'
 
 class WizardExecutionTest < Test::Unit::TestCase
   class Step1Dialog < Debconf::Dialog
-    def show debconf_driver
-      super(debconf_driver)
-      { code: :ok }
+    def show debconf_driver, wizard_duck
+      super(debconf_driver, wizard_duck)
+      :ok
     end
   end
 
   class Step2Dialog < Debconf::Dialog
-    def show debconf_driver
-      super(debconf_driver)
-      { code: :cancel }
+    def show debconf_driver, wizard_duck
+      super(debconf_driver, wizard_duck)
+      :cancel
     end
   end
 

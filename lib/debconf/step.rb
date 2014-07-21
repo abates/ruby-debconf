@@ -35,8 +35,8 @@ module Debconf
       end
     end
 
-    def execute debconf_driver
-      @dialog.show(debconf_driver)
+    def execute debconf_driver, wizard
+      @dialog.show(debconf_driver, wizard)
     end
 
     def dialog dialog
