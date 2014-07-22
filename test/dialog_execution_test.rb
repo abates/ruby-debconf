@@ -3,7 +3,7 @@ require 'test/unit'
 require 'debconf_stub'
 require 'debconf/dialog'
 
-class DialogTest < Test::Unit::TestCase
+class DialogExecutionTest < Test::Unit::TestCase
   class Dialog1 < Debconf::Dialog
     title "Dialog Title"
     input :critical, 'input1'
@@ -101,45 +101,6 @@ class DialogTest < Test::Unit::TestCase
       "ENDBLOCK", 
       "GO",
       "GET input1",
-    ], driver.debconf_stub.rx_cmds)
-  end
-
-  class Dialog4 < Debconf::Dialog
-    title "Dialog Title"
-    input :critical, 'input1'
-    validate 'input1', 'input1_error', :input1_validator
-
-    def input1_validator value
-      if (@seen.nil?)
-        @seen = true
-        return value == "correct value"
-      end
-      true
-    end
-  end
-
-  def test_dialog_substitutions
-    driver = StubbedDriver.new
-    driver.debconf_stub.input_values['correct value']
-
-    dialog = Dialog4.new
-    dialog.show(driver, {})
-
-    assert_equal([
-      "TITLE Dialog Title", 
-      "BEGINBLOCK", 
-      "INPUT critical input1", 
-      "ENDBLOCK", 
-      "GO",
-      "GET input1",
-      "INPUT critical input1_error",
-      "GO",
-      "TITLE Dialog Title", 
-      "BEGINBLOCK", 
-      "INPUT critical input1", 
-      "ENDBLOCK", 
-      "GO",
-      "GET input1"
     ], driver.debconf_stub.rx_cmds)
   end
 

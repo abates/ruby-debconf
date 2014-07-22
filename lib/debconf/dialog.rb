@@ -18,6 +18,10 @@ module Debconf
   class Dialog
     def self.title title=nil
       @title = @title || title
+      if (@title.nil? && superclass.respond_to?(:title))
+        return superclass.send(:title)
+      end
+      @title
     end
 
     def self.inputs
@@ -36,7 +40,8 @@ module Debconf
     end
 
     def self.validators
-      @validators || {}
+      @validators ||= {}
+      return (superclass.respond_to?(:validators) ? superclass.send(:validators) : {}).merge(@validators)
     end
 
     def initialize options={}
