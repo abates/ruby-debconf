@@ -86,4 +86,10 @@ class WizardExecutionTest < Test::Unit::TestCase
     wizard.transition!(:previous)
     assert_equal(:last, wizard.current_step)
   end
+
+  def test_return_code
+    wizard = TestWizard.new(StubbedDriver.new)
+    wizard.transition!(:next)
+    assert_equal(wizard.last_code, :next)
+  end
 end

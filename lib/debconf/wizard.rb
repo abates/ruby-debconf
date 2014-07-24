@@ -58,10 +58,11 @@ module Debconf
       @config = {}
     end
 
-    def transition! event
+    def transition! code
+      @last_code = code
       previous_step = @current_step
       step = self.class.debconf_steps[@current_step]
-      @current_step = step.transition(event)
+      @current_step = step.transition(code)
       if (self.class.debconf_steps[@current_step].nil?)
         case @current_step
         when :next
@@ -72,7 +73,7 @@ module Debconf
           @current_step = :last
         end
       end
-      if (event == :previous)
+      if (code == :previous)
         @breadcrumbs.pop
       else
         @breadcrumbs << previous_step
@@ -110,6 +111,10 @@ module Debconf
         config = config[key]
       end
       config[last_key] = value 
+    end
+
+    def last_code
+      @last_code
     end
   end
 end
