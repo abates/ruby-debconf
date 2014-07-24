@@ -18,9 +18,9 @@ class DialogValidationsTest < Test::Unit::TestCase
     end
   end
 
-  def test_dialog_validations
+  def test_dialog_invalid_value
     driver = StubbedDriver.new
-    driver.debconf_stub.input_values['correct value']
+    driver.debconf_stub.input_values['input1'] = 'incorrect value'
 
     dialog = Dialog1.new
     dialog.show(driver, {})
@@ -43,6 +43,23 @@ class DialogValidationsTest < Test::Unit::TestCase
     ], driver.debconf_stub.rx_cmds)
   end
 
+  def test_dialog_valid_value
+    driver = StubbedDriver.new
+    driver.debconf_stub.input_values['input1'] = 'correct value'
+
+    dialog = Dialog1.new
+    dialog.show(driver, {})
+
+    assert_equal([
+      "TITLE Dialog Title", 
+      "BEGINBLOCK", 
+      "INPUT critical input1", 
+      "ENDBLOCK", 
+      "GO",
+      "GET input1"
+    ], driver.debconf_stub.rx_cmds)
+  end
+
   class Dialog2 < Dialog1
     def pass
     end
@@ -50,7 +67,7 @@ class DialogValidationsTest < Test::Unit::TestCase
 
   def test_inherited_dialog_validations
     driver = StubbedDriver.new
-    driver.debconf_stub.input_values['correct value']
+    driver.debconf_stub.input_values['input1'] = 'incorrect value'
 
     dialog = Dialog2.new
     dialog.show(driver, {})
