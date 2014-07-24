@@ -88,7 +88,7 @@ module Debconf
       if (code == 0)
         return :ok
       end
-      raise "Error #{retval}: #{value}"
+      raise "Error #{code}: #{value}"
     end
 
     def get question
