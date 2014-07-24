@@ -32,6 +32,9 @@ module Debconf
     def self.input priority, name
       @inputs ||= []
       @inputs << { priority: priority, name: name }
+      define_method(name) do
+        return (instance_variable_defined?("@#{name}".to_sym) ? instance_variable_get("@#{name}".to_sym) : nil)
+      end
     end
 
     def self.validate field, error_template, validator
@@ -82,6 +85,7 @@ module Debconf
           if (self.class.validators[name])
             if (send(self.class.validators[name][1], value))
               wizard_duck[prefixed_name] = value
+              instance_variable_set("@#{name}".to_sym, value)
             else
               error_template = @prefix.nil? ? self.class.validators[name][0] : "#{@prefix}/#{self.class.validators[name][0]}"
               debconf_driver.input('critical', error_template)
@@ -90,6 +94,7 @@ module Debconf
             end
           else
             wizard_duck[prefixed_name] = value
+            instance_variable_set("@#{name}".to_sym, value)
           end
         end
       end
