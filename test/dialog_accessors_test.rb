@@ -9,7 +9,7 @@ class DialogAccessorsTest < Test::Unit::TestCase
     input :critical, 'input1'
   end
 
-  def test_dialog_validations
+  def test_dialog_accessor
     driver = StubbedDriver.new
     driver.debconf_stub.input_values['input1'] = 'value1'
 
