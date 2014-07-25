@@ -56,11 +56,11 @@ class DebconfStub
     when 'TITLE'
     when 'STOP'
     when 'INPUT'
-      @tx_cmd_str = @default_tx_str
+      @tx_cmd_str = @default_tx_str || @tx_cmd_str
     when 'BEGINBLOCK'
     when 'ENDBLOCK'
     when 'GO'
-      @tx_cmd_str = @default_tx_str
+      @tx_cmd_str = @default_tx_str || @tx_cmd_str
     when 'CLEAR'
     when 'GET'
       @tx_cmd_str = "0 #{input_values[argument]}"

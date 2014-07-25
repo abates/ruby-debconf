@@ -36,8 +36,15 @@ module Debconf
       @outstream.puts("#{args.join(' ')}")
       @outstream.flush
       if (args[0] != 'STOP')
-        (status, text) = @instream.gets.rstrip.split(/\s+/, 2)
-        status = status.to_i
+        line = @instream.gets.rstrip
+        if (line =~ /^(\d+)(?:\s+(.+))?$/)
+          status = $1
+          text = $2
+          status = status.to_i
+        else
+          raise "Unexpected string from debconf: #{line}"
+        end
+        #(status, text) = @instream.gets.rstrip.split(/\s+/, 2)
       else
         status = 0
         text = 'OK'
