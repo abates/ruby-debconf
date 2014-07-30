@@ -5,6 +5,8 @@ require 'debconf/dialog'
 
 class DialogValidationsTest < Test::Unit::TestCase
   class Dialog1 < Debconf::Dialog
+    attr_reader :seen
+
     title "Dialog Title"
     input :critical, 'input1'
     validate 'input1', 'input1_error', :input1_validator
@@ -40,6 +42,24 @@ class DialogValidationsTest < Test::Unit::TestCase
       "ENDBLOCK", 
       "GO",
       "GET input1"
+    ], driver.debconf_stub.rx_cmds)
+  end
+
+  def test_validations_not_called_on_canceled
+    driver = StubbedDriver.new
+    driver.debconf_stub.default_tx_str = "30 backup"
+    driver.debconf_stub.input_values['input1'] = 'incorrect value'
+
+    dialog = Dialog1.new
+    dialog.show(driver, {})
+    assert_equal(nil, dialog.seen)
+
+    assert_equal([
+      "TITLE Dialog Title", 
+      "BEGINBLOCK", 
+      "INPUT critical input1", 
+      "ENDBLOCK", 
+      "GO",
     ], driver.debconf_stub.rx_cmds)
   end
 
