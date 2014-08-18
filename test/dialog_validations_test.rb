@@ -60,6 +60,7 @@ class DialogValidationsTest < Test::Unit::TestCase
       "INPUT critical input1", 
       "ENDBLOCK", 
       "GO",
+      "SET input1 "
     ], driver.debconf_stub.rx_cmds)
   end
 
