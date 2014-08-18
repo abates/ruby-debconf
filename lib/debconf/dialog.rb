@@ -114,6 +114,12 @@ module Debconf
               instance_variable_set("@#{name}".to_sym, value)
             end
           end
+        else
+          # unset any values in this dialog so that debconf
+          # will ask the questions again
+          self.class.inputs.each do |input|
+            debconf_driver.set(prefixed_attribute(input[:name]), '')
+          end
         end
       end
       code
