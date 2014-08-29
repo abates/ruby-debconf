@@ -20,10 +20,12 @@ module Debconf
         instream = STDIN
         outstream = STDOUT
         if (ENV['DEBIAN_HAS_FRONTEND'].nil?)
+          args = ARGV
+          args << { close_others: false }
           if (ENV["DEBCONF_USE_CDEBCONF"])
-            exec("/usr/lib/cdebconf/debconf", $0, *ARGV)
+            exec("/usr/lib/cdebconf/debconf", $0, *args)
           else
-            exec("/usr/share/debconf/frontend", $0, *ARGV)
+            exec("/usr/share/debconf/frontend", $0, *args)
           end
         end
       end
