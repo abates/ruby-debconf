@@ -10,7 +10,7 @@ end
 
 class DebconfStub
   attr_reader :rx_cmds, :input_values
-  attr_accessor :default_tx_str
+  attr_accessor :default_input_str, :default_go_str
 
   def initialize
     @rx_cmds = []
@@ -56,11 +56,11 @@ class DebconfStub
     when 'TITLE'
     when 'STOP'
     when 'INPUT'
-      @tx_cmd_str = @default_tx_str || @tx_cmd_str
+      @tx_cmd_str = @default_input_str || @tx_cmd_str
     when 'BEGINBLOCK'
     when 'ENDBLOCK'
     when 'GO'
-      @tx_cmd_str = @default_tx_str || @tx_cmd_str
+      @tx_cmd_str = @default_go_str || @tx_cmd_str
     when 'CLEAR'
     when 'GET'
       @tx_cmd_str = "0 #{input_values[argument]}"

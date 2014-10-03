@@ -47,7 +47,7 @@ class DialogValidationsTest < Test::Unit::TestCase
 
   def test_validations_not_called_on_canceled
     driver = StubbedDriver.new
-    driver.debconf_stub.default_tx_str = "30 backup"
+    driver.debconf_stub.default_input_str = "30 backup"
     driver.debconf_stub.input_values['input1'] = 'incorrect value'
 
     dialog = Dialog1.new
@@ -60,7 +60,7 @@ class DialogValidationsTest < Test::Unit::TestCase
       "INPUT critical input1", 
       "ENDBLOCK", 
       "GO",
-      "SET input1 "
+      "GET input1"
     ], driver.debconf_stub.rx_cmds)
   end
 

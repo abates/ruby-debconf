@@ -16,11 +16,11 @@ class DriverTest < Test::Unit::TestCase
     result = @driver.input('priority', 'question')
     assert_equal(:ok, result)
 
-    @driver.debconf_stub.default_tx_str = "30 skipped"
+    @driver.debconf_stub.default_input_str = "30 skipped"
     result = @driver.input('priority', 'question')
     assert_equal(:skipped, result)
 
-    @driver.debconf_stub.default_tx_str = "40 skipped"
+    @driver.debconf_stub.default_input_str = "40 skipped"
     assert_raise RuntimeError do
       result = @driver.input('priority', 'question')
     end

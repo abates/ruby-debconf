@@ -60,7 +60,7 @@ module Debconf
       code = nil
       done = false
       while (! done)
-        inputs_to_validate = []
+        inputs_to_validate = {}
         debconf_driver.title(@title || self.class.title)
         debconf_driver.block do
           self.class.inputs.each do |input|
@@ -86,20 +86,19 @@ module Debconf
             # it's being skipped)
             #
             if (code == :ok)
-              inputs_to_validate << input
+              inputs_to_validate[input] = true
             end
           end
         end
         code = debconf_driver.go
         done = true
         if (code == :next)
-          inputs_to_validate.each do |input|
-          #self.class.inputs.each do |input|
+          self.class.inputs.each do |input|
             priority = input[:priority]
             name = input[:name]
             prefixed_name = prefixed_attribute(name)
             value = debconf_driver.get(prefixed_name)
-            if (self.class.validators[name])
+            if (inputs_to_validate[input] and self.class.validators[name])
               if (send(self.class.validators[name][1], value))
                 wizard_duck[prefixed_name] = value
                 instance_variable_set("@#{name}".to_sym, value)
@@ -113,12 +112,6 @@ module Debconf
               wizard_duck[prefixed_name] = value
               instance_variable_set("@#{name}".to_sym, value)
             end
-          end
-        else
-          # unset any values in this dialog so that debconf
-          # will ask the questions again
-          self.class.inputs.each do |input|
-            debconf_driver.set(prefixed_attribute(input[:name]), '')
           end
         end
       end

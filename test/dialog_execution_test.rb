@@ -189,4 +189,20 @@ class DialogExecutionTest < Test::Unit::TestCase
     ], driver.debconf_stub.rx_cmds)
   end
 
+  def test_skipped_questions_still_are_retrieved
+    driver = StubbedDriver.new
+    driver.debconf_stub.default_input_str = "30 question skipped"
+    dialog = Dialog7.new()
+    dialog.show(driver, {})
+
+    assert_equal([
+      "TITLE Dialog Title",
+      "BEGINBLOCK",
+      "SUBST input1 key1 value1",
+      "INPUT critical input1",
+      "ENDBLOCK",
+      "GO",
+      "GET input1"
+    ], driver.debconf_stub.rx_cmds)
+  end
 end
