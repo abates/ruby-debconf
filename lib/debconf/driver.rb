@@ -139,5 +139,13 @@ module Debconf
       end
       raise "Error #{retval}: #{text}"
     end
+
+    def fset question, flag, value
+      (retval, text) = execute("FSET", "#{question}", "#{flag}", "#{value}")
+      if (retval == 0)
+        return :ok
+      end
+      raise "Error #{retval}: #{text}"
+    end
   end
 end

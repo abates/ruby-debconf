@@ -205,4 +205,21 @@ class DialogExecutionTest < Test::Unit::TestCase
       "GET input1"
     ], driver.debconf_stub.rx_cmds)
   end
+
+  def test_forced_questions_call_fset
+    driver = StubbedDriver.new
+    dialog = Dialog7.new(force: true)
+    dialog.show(driver, {})
+
+    assert_equal([
+      "TITLE Dialog Title",
+      "BEGINBLOCK",
+      "SUBST input1 key1 value1",
+      "FSET input1 seen false",
+      "INPUT critical input1",
+      "ENDBLOCK",
+      "GO",
+      "GET input1"
+    ], driver.debconf_stub.rx_cmds)
+  end
 end

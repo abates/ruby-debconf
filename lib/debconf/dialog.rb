@@ -50,6 +50,7 @@ module Debconf
     def initialize options={}
       @title = options[:title]
       @prefix = options[:prefix]
+      @force = options[:force]
     end
 
     def prefixed_attribute name
@@ -76,6 +77,9 @@ module Debconf
             if (respond_to?("#{name}_value".to_sym))
               value = send("#{name}_value".to_sym)
               debconf_driver.set(prefixed_name, value)
+            end
+            if (@force)
+              debconf_driver.fset(prefixed_name, "seen", "false")
             end
             code = debconf_driver.input(priority, prefixed_name)
             # 
