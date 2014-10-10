@@ -17,12 +17,11 @@ class DialogExecutionTest < Test::Unit::TestCase
 
     assert_equal([
       "TITLE Dialog Title", 
-      "BEGINBLOCK", 
       "INPUT critical input1", 
-      "INPUT critical input2", 
-      "ENDBLOCK", 
       "GO",
       "GET input1",
+      "INPUT critical input2", 
+      "GO",
       "GET input2"
     ], driver.debconf_stub.rx_cmds)
   end
@@ -69,11 +68,9 @@ class DialogExecutionTest < Test::Unit::TestCase
 
     assert_equal([
       "TITLE Dialog Title", 
-      "BEGINBLOCK", 
       "SUBST input1 key1 substitute this value, please",
       "SUBST input1 key2 substitute this value too!",
       "INPUT critical input1", 
-      "ENDBLOCK", 
       "GO",
       "GET input1",
     ], driver.debconf_stub.rx_cmds)
@@ -95,10 +92,8 @@ class DialogExecutionTest < Test::Unit::TestCase
 
     assert_equal([
       "TITLE Dialog Title", 
-      "BEGINBLOCK", 
       "SET input1 foo bar!",
       "INPUT critical input1", 
-      "ENDBLOCK", 
       "GO",
       "GET input1",
     ], driver.debconf_stub.rx_cmds)
@@ -115,9 +110,6 @@ class DialogExecutionTest < Test::Unit::TestCase
 
     assert_equal([
       "TITLE Different Dialog Title", 
-      "BEGINBLOCK", 
-      "ENDBLOCK", 
-      "GO",
     ], driver.debconf_stub.rx_cmds)
   end
 
@@ -133,9 +125,7 @@ class DialogExecutionTest < Test::Unit::TestCase
 
     assert_equal([
       "TITLE Dialog Title", 
-      "BEGINBLOCK", 
       "INPUT critical test/input1",
-      "ENDBLOCK", 
       "GO",
       "GET test/input1"
     ], driver.debconf_stub.rx_cmds)
@@ -157,10 +147,8 @@ class DialogExecutionTest < Test::Unit::TestCase
 
     assert_equal([
       "TITLE Dialog Title", 
-      "BEGINBLOCK", 
       "SUBST test/input1 key1 value1",
       "INPUT critical test/input1",
-      "ENDBLOCK", 
       "GO",
       "GET test/input1"
     ], driver.debconf_stub.rx_cmds)
@@ -178,13 +166,12 @@ class DialogExecutionTest < Test::Unit::TestCase
 
     assert_equal([
       "TITLE Dialog Title", 
-      "BEGINBLOCK", 
       "SUBST input1 key1 value1",
       "INPUT critical input1",
-      "INPUT critical input2",
-      "ENDBLOCK", 
       "GO",
       "GET input1",
+      "INPUT critical input2",
+      "GO",
       "GET input2"
     ], driver.debconf_stub.rx_cmds)
   end
@@ -197,11 +184,8 @@ class DialogExecutionTest < Test::Unit::TestCase
 
     assert_equal([
       "TITLE Dialog Title",
-      "BEGINBLOCK",
       "SUBST input1 key1 value1",
       "INPUT critical input1",
-      "ENDBLOCK",
-      "GO",
       "GET input1"
     ], driver.debconf_stub.rx_cmds)
   end
@@ -213,13 +197,54 @@ class DialogExecutionTest < Test::Unit::TestCase
 
     assert_equal([
       "TITLE Dialog Title",
-      "BEGINBLOCK",
       "SUBST input1 key1 value1",
       "FSET input1 seen false",
       "INPUT critical input1",
-      "ENDBLOCK",
       "GO",
       "GET input1"
+    ], driver.debconf_stub.rx_cmds)
+  end
+
+  class Dialog9 < Debconf::Dialog
+    title "Dialog Title"
+    input :critical, 'input1'
+    input :critical, 'input2', :if => :input1_matches
+
+    def input1_matches
+      input1 =~ /match/
+    end
+  end
+
+  def test_optional_question_skipped_without_matching_condition
+    driver = StubbedDriver.new
+    driver.debconf_stub.input_values['input1'] = ''
+
+    dialog = Dialog9.new
+    dialog.show(driver, {})
+
+    assert_equal([
+      "TITLE Dialog Title",
+      "INPUT critical input1",
+      "GO",
+      "GET input1"
+    ], driver.debconf_stub.rx_cmds)
+  end
+
+  def test_optional_question_asked_with_matching_condition
+    driver = StubbedDriver.new
+    driver.debconf_stub.input_values['input1'] = 'match'
+
+    dialog = Dialog9.new
+    dialog.show(driver, {})
+
+    assert_equal([
+      "TITLE Dialog Title",
+      "INPUT critical input1",
+      "GO",
+      "GET input1",
+      "INPUT critical input2",
+      "GO",
+      "GET input2"
     ], driver.debconf_stub.rx_cmds)
   end
 end

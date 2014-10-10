@@ -29,9 +29,9 @@ module Debconf
       return [superclass.respond_to?(:inputs) ? superclass.send(:inputs) : [], @inputs].flatten
     end
 
-    def self.input priority, name
+    def self.input priority, name, options={}
       @inputs ||= []
-      @inputs << { priority: priority, name: name }
+      @inputs << { priority: priority, name: name }.merge(options)
       define_method(name) do
         return (instance_variable_defined?("@#{name}".to_sym) ? instance_variable_get("@#{name}".to_sym) : nil)
       end
@@ -59,51 +59,40 @@ module Debconf
 
     def show debconf_driver, wizard_duck
       code = nil
-      done = false
-      while (! done)
-        inputs_to_validate = {}
-        debconf_driver.title(@title || self.class.title)
-        debconf_driver.block do
-          self.class.inputs.each do |input|
-            priority = input[:priority]
-            name = input[:name]
-            prefixed_name = prefixed_attribute(name)
-            if (respond_to?("#{name}_subst".to_sym))
-              substitutions = send("#{name}_subst".to_sym)
-              substitutions.each do |key, value|
-                debconf_driver.subst(prefixed_name, key, value)
-              end
-            end
-            if (respond_to?("#{name}_value".to_sym))
-              value = send("#{name}_value".to_sym)
-              debconf_driver.set(prefixed_name, value)
-            end
-            if (@force)
-              debconf_driver.fset(prefixed_name, "seen", "false")
-            end
-            code = debconf_driver.input(priority, prefixed_name)
-            # 
-            # If the question is skipped then user input wasn't
-            # supplied (meaning the value was in the debconf db
-            # already).  We need to record this so we don't try
-            # to validate a field that can't be corrected (since
-            # it's being skipped)
-            #
-            if (code == :ok)
-              inputs_to_validate[input] = true
+      debconf_driver.title(@title || self.class.title)
+      self.class.inputs.each do |input|
+        done = false
+        next unless (input[:if].nil? or send(input[:if]))
+        while (! done)
+          done = true
+          priority = input[:priority]
+          name = input[:name]
+          prefixed_name = prefixed_attribute(name)
+          if (respond_to?("#{name}_subst".to_sym))
+            substitutions = send("#{name}_subst".to_sym)
+            substitutions.each do |key, value|
+              debconf_driver.subst(prefixed_name, key, value)
             end
           end
-        end
-        code = debconf_driver.go
-        done = true
-        if (code == :next)
-          self.class.inputs.each do |input|
-            priority = input[:priority]
-            name = input[:name]
-            prefixed_name = prefixed_attribute(name)
-            value = debconf_driver.get(prefixed_name)
-            if (inputs_to_validate[input] and self.class.validators[name])
-              if (send(self.class.validators[name][1], value))
+          if (respond_to?("#{name}_value".to_sym))
+            value = send("#{name}_value".to_sym)
+            debconf_driver.set(prefixed_name, value)
+          end
+          if (@force)
+            debconf_driver.fset(prefixed_name, "seen", "false")
+          end
+          code = debconf_driver.input(priority, prefixed_name)
+          # 
+          # If the question is skipped then user input wasn't
+          # supplied (meaning the value was in the debconf db
+          # already).  We need to skip validation on this field
+          # because it can't be corrected (since it's being skipped)
+          #
+          if (code == :ok)
+            code = debconf_driver.go
+            if (code == :next)
+              value = debconf_driver.get(prefixed_name)
+              if (self.class.validators[name].nil? || send(self.class.validators[name][1], value))
                 wizard_duck[prefixed_name] = value
                 instance_variable_set("@#{name}".to_sym, value)
               else
@@ -112,10 +101,10 @@ module Debconf
                 debconf_driver.go
                 done = false
               end
-            else
-              wizard_duck[prefixed_name] = value
-              instance_variable_set("@#{name}".to_sym, value)
             end
+          else
+            wizard_duck[prefixed_name] = debconf_driver.get(prefixed_name)
+            instance_variable_set("@#{name}".to_sym, value)
           end
         end
       end

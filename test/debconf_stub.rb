@@ -15,6 +15,8 @@ class DebconfStub
   def initialize
     @rx_cmds = []
     @input_values = {}
+    @default_go_str = "0 NEXT"
+    @default_input_str = "0 OK"
   end
 
   def puts string

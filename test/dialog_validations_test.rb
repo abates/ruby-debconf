@@ -29,17 +29,12 @@ class DialogValidationsTest < Test::Unit::TestCase
 
     assert_equal([
       "TITLE Dialog Title", 
-      "BEGINBLOCK", 
       "INPUT critical input1", 
-      "ENDBLOCK", 
       "GO",
       "GET input1",
       "INPUT critical input1_error",
       "GO",
-      "TITLE Dialog Title", 
-      "BEGINBLOCK", 
       "INPUT critical input1", 
-      "ENDBLOCK", 
       "GO",
       "GET input1"
     ], driver.debconf_stub.rx_cmds)
@@ -56,10 +51,7 @@ class DialogValidationsTest < Test::Unit::TestCase
 
     assert_equal([
       "TITLE Dialog Title", 
-      "BEGINBLOCK", 
       "INPUT critical input1", 
-      "ENDBLOCK", 
-      "GO",
       "GET input1"
     ], driver.debconf_stub.rx_cmds)
   end
@@ -73,9 +65,7 @@ class DialogValidationsTest < Test::Unit::TestCase
 
     assert_equal([
       "TITLE Dialog Title", 
-      "BEGINBLOCK", 
       "INPUT critical input1", 
-      "ENDBLOCK", 
       "GO",
       "GET input1"
     ], driver.debconf_stub.rx_cmds)
@@ -95,17 +85,12 @@ class DialogValidationsTest < Test::Unit::TestCase
 
     assert_equal([
       "TITLE Dialog Title", 
-      "BEGINBLOCK", 
       "INPUT critical input1", 
-      "ENDBLOCK", 
       "GO",
       "GET input1",
       "INPUT critical input1_error",
       "GO",
-      "TITLE Dialog Title", 
-      "BEGINBLOCK", 
       "INPUT critical input1", 
-      "ENDBLOCK", 
       "GO",
       "GET input1"
     ], driver.debconf_stub.rx_cmds)
