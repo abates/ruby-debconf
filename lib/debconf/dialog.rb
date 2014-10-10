@@ -108,6 +108,9 @@ module Debconf
           end
         end
       end
+      if (code == :skipped)
+        code = :next
+      end
       code
     end
   end
