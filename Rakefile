@@ -12,8 +12,7 @@ task :build_deb do
 end
 
 Rake::TestTask.new do |t|
-  t.libs << 'lib/'
   t.libs << 'test/'
-  t.test_files = FileList['test/*_test.rb']
-  t.verbose = true
+  t.libs << 'lib/'
+  t.test_files = FileList['test/specs/*_spec.rb', 'test/specs/*_test.rb']
 end

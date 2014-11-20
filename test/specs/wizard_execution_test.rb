@@ -1,5 +1,5 @@
 require 'test/unit'
-require 'debconf_stub.rb'
+require 'debconf/test/debconf_stub.rb'
 require 'debconf/wizard'
 require 'debconf/dialog'
 

@@ -1,6 +1,6 @@
 
 require 'test/unit'
-require 'debconf_stub'
+require 'debconf/test/debconf_stub'
 require 'debconf/dialog'
 
 class DialogAccessorsTest < Test::Unit::TestCase

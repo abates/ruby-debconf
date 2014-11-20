@@ -1,7 +1,7 @@
 #!/usr/bin/env ruby
 
 require 'test/unit'
-require 'debconf_stub'
+require 'debconf/test/debconf_stub'
 require 'debconf/wizard'
 require 'debconf/dialog'
 

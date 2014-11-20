@@ -1,5 +1,5 @@
 require 'test/unit'
-require 'debconf_stub'
+require 'debconf/test/debconf_stub'
 require 'debconf/driver'
 
 class DriverTest < Test::Unit::TestCase

@@ -1,6 +1,6 @@
 require 'test/unit'
 require 'debconf/wizard'
-require 'debconf_stub'
+require 'debconf/test/debconf_stub'
 
 class WizardDefinitionTest < Test::Unit::TestCase
   class TestWizard < Debconf::Wizard
