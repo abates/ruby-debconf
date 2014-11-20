@@ -1,6 +1,6 @@
 
 require 'test/unit'
-require 'debconf/test/debconf_stub'
+require 'debconf/test'
 require 'debconf/dialog'
 
 class DialogAccessorsTest < Test::Unit::TestCase
@@ -10,7 +10,7 @@ class DialogAccessorsTest < Test::Unit::TestCase
   end
 
   def test_dialog_accessor
-    driver = StubbedDriver.new
+    driver = Debconf::Test::Driver.new
     driver.debconf_stub.input_values['input1'] = 'value1'
 
     dialog = Dialog.new

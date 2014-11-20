@@ -1,6 +1,6 @@
 
 require 'test/unit'
-require 'debconf/test/debconf_stub'
+require 'debconf/test'
 require 'debconf/dialog'
 
 class DialogExecutionTest < Test::Unit::TestCase
@@ -11,7 +11,7 @@ class DialogExecutionTest < Test::Unit::TestCase
   end
 
   def test_dialog_commands
-    driver = StubbedDriver.new
+    driver = Debconf::Test::Driver.new
     dialog = Dialog1.new
     dialog.show(driver, {})
 
@@ -27,7 +27,7 @@ class DialogExecutionTest < Test::Unit::TestCase
   end
 
   def test_dialog_return_values
-    driver = StubbedDriver.new
+    driver = Debconf::Test::Driver.new
     dialog = Dialog1.new
     values = {}
     code = dialog.show(driver, values)
@@ -62,7 +62,7 @@ class DialogExecutionTest < Test::Unit::TestCase
   end
 
   def test_dialog_substitutions
-    driver = StubbedDriver.new
+    driver = Debconf::Test::Driver.new
     dialog = Dialog2.new
     dialog.show(driver, {})
 
@@ -86,7 +86,7 @@ class DialogExecutionTest < Test::Unit::TestCase
   end
 
   def test_dialog_value
-    driver = StubbedDriver.new
+    driver = Debconf::Test::Driver.new
     dialog = Dialog3.new
     dialog.show(driver, {})
 
@@ -104,7 +104,7 @@ class DialogExecutionTest < Test::Unit::TestCase
   end
 
   def test_overriding_dialog_title
-    driver = StubbedDriver.new
+    driver = Debconf::Test::Driver.new
     dialog = Dialog5.new(title: 'Different Dialog Title')
     dialog.show(driver, {})
 
@@ -119,7 +119,7 @@ class DialogExecutionTest < Test::Unit::TestCase
   end
 
   def test_input_prefixes
-    driver = StubbedDriver.new
+    driver = Debconf::Test::Driver.new
     dialog = Dialog6.new(prefix: 'test')
     dialog.show(driver, {})
 
@@ -141,7 +141,7 @@ class DialogExecutionTest < Test::Unit::TestCase
   end
 
   def test_prefix_substitutions
-    driver = StubbedDriver.new
+    driver = Debconf::Test::Driver.new
     dialog = Dialog7.new(prefix: 'test')
     dialog.show(driver, {})
 
@@ -160,7 +160,7 @@ class DialogExecutionTest < Test::Unit::TestCase
   end
 
   def test_dialog_inheritance
-    driver = StubbedDriver.new
+    driver = Debconf::Test::Driver.new
     dialog = Dialog8.new
     dialog.show(driver, {})
 
@@ -177,7 +177,7 @@ class DialogExecutionTest < Test::Unit::TestCase
   end
 
   def test_skipped_questions_still_are_retrieved
-    driver = StubbedDriver.new
+    driver = Debconf::Test::Driver.new
     driver.debconf_stub.default_input_str = "30 question skipped"
     dialog = Dialog7.new()
     dialog.show(driver, {})
@@ -191,7 +191,7 @@ class DialogExecutionTest < Test::Unit::TestCase
   end
 
   def test_forced_questions_call_fset
-    driver = StubbedDriver.new
+    driver = Debconf::Test::Driver.new
     dialog = Dialog7.new(force: true)
     dialog.show(driver, {})
 
@@ -216,7 +216,7 @@ class DialogExecutionTest < Test::Unit::TestCase
   end
 
   def test_optional_question_skipped_without_matching_condition
-    driver = StubbedDriver.new
+    driver = Debconf::Test::Driver.new
     driver.debconf_stub.input_values['input1'] = ''
 
     dialog = Dialog9.new
@@ -231,7 +231,7 @@ class DialogExecutionTest < Test::Unit::TestCase
   end
 
   def test_optional_question_asked_with_matching_condition
-    driver = StubbedDriver.new
+    driver = Debconf::Test::Driver.new
     driver.debconf_stub.input_values['input1'] = 'match'
 
     dialog = Dialog9.new

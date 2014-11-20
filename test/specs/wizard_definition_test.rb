@@ -1,6 +1,6 @@
 require 'test/unit'
 require 'debconf/wizard'
-require 'debconf/test/debconf_stub'
+require 'debconf/test'
 
 class WizardDefinitionTest < Test::Unit::TestCase
   class TestWizard < Debconf::Wizard
@@ -34,7 +34,7 @@ class WizardDefinitionTest < Test::Unit::TestCase
   end
 
   def test_starting_step
-    wizard = TestWizard.new(StubbedDriver.new)
+    wizard = TestWizard.new(Debconf::Test::Driver.new)
     assert_equal :step1, wizard.current_step
   end
 end

@@ -1,7 +1,7 @@
 #!/usr/bin/env ruby
 
 require 'test/unit'
-require 'debconf/test/debconf_stub'
+require 'debconf/test'
 require 'debconf/wizard'
 require 'debconf/dialog'
 
@@ -26,7 +26,7 @@ class WizardConfigurationTest < Test::Unit::TestCase
   end
 
   def test_configuration_hierarchy
-    driver = StubbedDriver.new
+    driver = Debconf::Test::Driver.new
     driver.debconf_stub.input_values['test/step1/input1'] = '1'
     driver.debconf_stub.input_values['test/step1/input2'] = '2'
     driver.debconf_stub.input_values['test/step2/input1'] = '3'
@@ -49,7 +49,7 @@ class WizardConfigurationTest < Test::Unit::TestCase
   end
 
   def test_configuration_get
-    driver = StubbedDriver.new
+    driver = Debconf::Test::Driver.new
     driver.debconf_stub.input_values['test/step1/input1'] = '1'
     driver.debconf_stub.input_values['test/step1/input2'] = '2'
     driver.debconf_stub.input_values['test/step2/input1'] = '3'
@@ -64,7 +64,7 @@ class WizardConfigurationTest < Test::Unit::TestCase
   end
 
   def test_configuration_hierarchy
-    driver = StubbedDriver.new
+    driver = Debconf::Test::Driver.new
     driver.debconf_stub.input_values['test/step1/input1'] = '1'
     driver.debconf_stub.input_values['test/step1/input2'] = '2'
     driver.debconf_stub.input_values['test/step2/input1'] = '3'

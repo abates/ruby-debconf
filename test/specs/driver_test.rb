@@ -1,10 +1,10 @@
 require 'test/unit'
-require 'debconf/test/debconf_stub'
+require 'debconf/test'
 require 'debconf/driver'
 
 class DriverTest < Test::Unit::TestCase
   def setup
-    @driver = StubbedDriver.new
+    @driver = Debconf::Test::Driver.new
   end
 
   def test_execute

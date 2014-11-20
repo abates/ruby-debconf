@@ -1,6 +1,6 @@
 
 require 'test/unit'
-require 'debconf/test/debconf_stub'
+require 'debconf/test'
 require 'debconf/dialog'
 
 class DialogValidationsTest < Test::Unit::TestCase
@@ -21,7 +21,7 @@ class DialogValidationsTest < Test::Unit::TestCase
   end
 
   def test_dialog_invalid_value
-    driver = StubbedDriver.new
+    driver = Debconf::Test::Driver.new
     driver.debconf_stub.input_values['input1'] = 'incorrect value'
 
     dialog = Dialog1.new
@@ -41,7 +41,7 @@ class DialogValidationsTest < Test::Unit::TestCase
   end
 
   def test_validations_not_called_on_canceled
-    driver = StubbedDriver.new
+    driver = Debconf::Test::Driver.new
     driver.debconf_stub.default_input_str = "30 backup"
     driver.debconf_stub.input_values['input1'] = 'incorrect value'
 
@@ -57,7 +57,7 @@ class DialogValidationsTest < Test::Unit::TestCase
   end
 
   def test_dialog_valid_value
-    driver = StubbedDriver.new
+    driver = Debconf::Test::Driver.new
     driver.debconf_stub.input_values['input1'] = 'correct value'
 
     dialog = Dialog1.new
@@ -77,7 +77,7 @@ class DialogValidationsTest < Test::Unit::TestCase
   end
 
   def test_inherited_dialog_validations
-    driver = StubbedDriver.new
+    driver = Debconf::Test::Driver.new
     driver.debconf_stub.input_values['input1'] = 'incorrect value'
 
     dialog = Dialog2.new

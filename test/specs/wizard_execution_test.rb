@@ -1,5 +1,5 @@
 require 'test/unit'
-require 'debconf/test/debconf_stub.rb'
+require 'debconf/test'
 require 'debconf/wizard'
 require 'debconf/dialog'
 
@@ -43,7 +43,7 @@ class WizardExecutionTest < Test::Unit::TestCase
   end
 
   def test_breadcrumbs
-    wizard = TestWizard.new(StubbedDriver.new)
+    wizard = TestWizard.new(Debconf::Test::Driver.new)
     wizard.transition!(:next)
     wizard.transition!(:next)
     assert_equal [:step1, :step2], wizard.breadcrumbs
@@ -56,7 +56,7 @@ class WizardExecutionTest < Test::Unit::TestCase
   end
 
   def test_execution
-    wizard = TestWizard.new(StubbedDriver.new)
+    wizard = TestWizard.new(Debconf::Test::Driver.new)
     wizard.execute!
     assert_equal [:step1, :step2], wizard.breadcrumbs
   end
@@ -76,7 +76,7 @@ class WizardExecutionTest < Test::Unit::TestCase
   end
 
   def test_default_transitions
-    wizard = TestWizard1.new(StubbedDriver.new)
+    wizard = TestWizard1.new(Debconf::Test::Driver.new)
     wizard.transition!(:next)
     assert_equal(:step2, wizard.current_step)
 
@@ -88,7 +88,7 @@ class WizardExecutionTest < Test::Unit::TestCase
   end
 
   def test_return_code
-    wizard = TestWizard.new(StubbedDriver.new)
+    wizard = TestWizard.new(Debconf::Test::Driver.new)
     wizard.transition!(:next)
     assert_equal(wizard.last_code, :next)
   end
