@@ -14,11 +14,9 @@
 # the License.
 #
 
-require "debconf/version"
-require "debconf/wizard"
-require "debconf/dialog"
-require "debconf/driver"
-require "debconf/step"
+require "debconf"
+require "debconf/test/stub"
+require "debconf/test/driver"
 
-module Debconf
+module Debconf::Test
 end

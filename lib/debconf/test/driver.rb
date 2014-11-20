@@ -14,11 +14,15 @@
 # the License.
 #
 
-require "debconf/version"
-require "debconf/wizard"
-require "debconf/dialog"
-require "debconf/driver"
-require "debconf/step"
+require 'debconf'
+require 'debconf/test'
 
-module Debconf
+module Debconf::Test
+  class Driver < ::Debconf::Driver
+    attr_reader :debconf_stub
+    def initialize
+      @debconf_stub = Stub.new
+      super(@debconf_stub, @debconf_stub)
+    end
+  end
 end
