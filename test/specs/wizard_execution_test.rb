@@ -1,9 +1,9 @@
-require 'test/unit'
+require 'minitest_helper'
 require 'debconf/test'
 require 'debconf/wizard'
 require 'debconf/dialog'
 
-class WizardExecutionTest < Test::Unit::TestCase
+class WizardExecutionTest < MiniTest::Test
   class Step1Dialog < Debconf::Dialog
     def show debconf_driver, wizard_duck
       super(debconf_driver, wizard_duck)

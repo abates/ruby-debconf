@@ -1,8 +1,8 @@
-require 'test/unit'
+require 'minitest_helper'
 require 'debconf/test'
 require 'debconf/driver'
 
-class DriverTest < Test::Unit::TestCase
+class DriverTest < MiniTest::Test
   def setup
     @driver = Debconf::Test::Driver.new
   end
@@ -21,7 +21,7 @@ class DriverTest < Test::Unit::TestCase
     assert_equal(:skipped, result)
 
     @driver.debconf_stub.default_input_str = "40 skipped"
-    assert_raise RuntimeError do
+    assert_raises RuntimeError do
       result = @driver.input('priority', 'question')
     end
   end

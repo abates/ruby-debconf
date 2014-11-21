@@ -1,9 +1,9 @@
 
-require 'test/unit'
+require 'minitest_helper'
 require 'debconf/test'
 require 'debconf/dialog'
 
-class DialogAccessorsTest < Test::Unit::TestCase
+class DialogAccessorsTest < MiniTest::Test
   class Dialog < Debconf::Dialog
     title "Dialog Title"
     input :critical, 'input1'

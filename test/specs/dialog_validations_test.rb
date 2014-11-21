@@ -1,9 +1,9 @@
 
-require 'test/unit'
+require 'minitest_helper'
 require 'debconf/test'
 require 'debconf/dialog'
 
-class DialogValidationsTest < Test::Unit::TestCase
+class DialogValidationsTest < MiniTest::Test
   class Dialog1 < Debconf::Dialog
     attr_reader :seen
 

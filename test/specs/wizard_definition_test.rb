@@ -1,8 +1,8 @@
-require 'test/unit'
+require 'minitest_helper'
 require 'debconf/wizard'
 require 'debconf/test'
 
-class WizardDefinitionTest < Test::Unit::TestCase
+class WizardDefinitionTest < MiniTest::Test
   class TestWizard < Debconf::Wizard
     sequence do
       @sequence_called = true

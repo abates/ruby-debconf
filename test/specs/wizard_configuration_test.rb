@@ -1,11 +1,11 @@
 #!/usr/bin/env ruby
 
-require 'test/unit'
+require 'minitest_helper'
 require 'debconf/test'
 require 'debconf/wizard'
 require 'debconf/dialog'
 
-class WizardConfigurationTest < Test::Unit::TestCase
+class WizardConfigurationTest < MiniTest::Test
   class TestDialog1 < Debconf::Dialog
     input :critical, :input1
     input :critical, :input2
