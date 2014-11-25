@@ -16,31 +16,20 @@
 
 module Debconf
   class Step
+    attr_reader :transition_table
+    
     def initialize name
       @name = name
-      @transitions = {}
+      @transition_table = {}
     end
 
     def on event, next_step
-      @transitions[event] = next_step
+      @transition_table[event] = next_step
     end
 
-    def transition event
-      if (@transitions[event])
-        return @transitions[event]
-      elsif ([:next, :previous, :last].include?(event))
-        return event
-      else
-        raise "No defined transition for #{event} in step #{@name}"
-      end
-    end
-
-    def execute debconf_driver, wizard
-      @dialog.show(debconf_driver, wizard)
-    end
-
-    def dialog dialog
-      @dialog = dialog
+    def dialog dialog=nil
+      @dialog = dialog unless dialog.nil?
+      @dialog
     end
   end
 end

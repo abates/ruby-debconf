@@ -22,19 +22,20 @@ module Debconf
     attr_reader :config, :current_step, :breadcrumbs
 
     def self.sequence &block
-      @debconf_steps = {}
+      @transition_table = {}
+      @steps = {}
       @debconf_first_step = nil
       @debconf_sequence = {}
       block.call
     end
 
     def self.step step_name, &block
-      raise "Duplicate step names are not allowed" if (@debconf_steps[step_name])
-      @debconf_first_step = step_name if (@debconf_steps.length == 0)
+      raise "Duplicate step names are not allowed" if (@transition_table[step_name])
+      @debconf_first_step = step_name if (@transition_table.length == 0)
       step = Debconf::Step.new(step_name)
-      @debconf_steps[step_name] = step
       block.call(step)
-
+      @steps[step_name] = step
+      @transition_table[step_name] = step.transition_table
       @debconf_sequence[@last_defined_step] = step_name unless (@last_defined_step.nil?)
       @last_defined_step = step_name
     end
@@ -43,27 +44,36 @@ module Debconf
       @debconf_sequence[current]
     end
 
-    def self.debconf_steps
-      @debconf_steps
-    end
-
     def self.debconf_first_step
       @debconf_first_step
     end
 
-    def initialize debconf_driver=nil
+    def self.steps
+      @steps
+    end
+
+    def self.transition_table
+      @transition_table
+    end
+
+    def self.execute debconf_driver=nil
+      debconf_driver ||= Debconf::Driver.new
+      wizard = self.new
+      wizard.execute!(debconf_driver)
+    end
+
+    def initialize
       @current_step = self.class.debconf_first_step
       @breadcrumbs = []
-      @debconf_driver = debconf_driver || Debconf::Driver.new
       @config = {}
     end
 
     def transition! code
       @last_code = code
       previous_step = @current_step
-      step = self.class.debconf_steps[@current_step]
-      @current_step = step.transition(code)
-      if (self.class.debconf_steps[@current_step].nil?)
+      @current_step = self.class.transition_table[@current_step][code]
+      #@current_step = transition(code)
+      if (self.class.transition_table[@current_step].nil?)
         case @current_step
         when :next
           @current_step = self.class.next(previous_step)
@@ -78,14 +88,6 @@ module Debconf
       else
         @breadcrumbs << previous_step
       end
-    end
-
-    def execute!
-      while (@current_step != :last)
-        code = self.class.debconf_steps[@current_step].execute(@debconf_driver, self)
-        transition!(code)
-      end
-      @debconf_driver.stop
     end
 
     def [] key
@@ -116,5 +118,15 @@ module Debconf
     def last_code
       @last_code
     end
+
+    private
+      def execute!
+        while (@current_step != :last)
+          dialog = self.class.steps[@current_step].dialog
+          code = @debconf_driver.show_dialog(dialog, self)
+          transition!(code)
+        end
+        @debconf_driver.stop
+      end
   end
 end

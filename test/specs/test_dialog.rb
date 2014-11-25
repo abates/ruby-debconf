@@ -3,7 +3,7 @@ require 'minitest_helper'
 require 'debconf/test'
 require 'debconf/dialog'
 
-class DialogValidationsTest < MiniTest::Test
+class DialogTest < MiniTest::Test
   class Dialog1 < Debconf::Dialog
     attr_reader :seen
 
