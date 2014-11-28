@@ -85,5 +85,9 @@ module Debconf
       end
       return errors.length == 0
     end
+
+    def invalid?
+      return ! valid?
+    end
   end
 end
