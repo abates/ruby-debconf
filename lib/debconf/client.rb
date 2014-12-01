@@ -135,7 +135,7 @@ module Debconf
       if (code == :skipped)
         code = :next
       end
-      code
+      dialog.next_code(code)
     end
   end
 end

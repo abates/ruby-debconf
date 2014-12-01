@@ -90,5 +90,9 @@ module Debconf
     def invalid?
       return ! valid?
     end
+
+    def next_code code=:ok
+      code
+    end
   end
 end
