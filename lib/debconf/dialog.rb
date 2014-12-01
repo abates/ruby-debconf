@@ -27,13 +27,13 @@ module Debconf
     end
 
     def self.inputs
-      @inputs ||= []
-      return [superclass.respond_to?(:inputs) ? superclass.send(:inputs) : [], @inputs].flatten
+      @inputs ||= {}
+      return (superclass.respond_to?(:inputs) ? superclass.send(:inputs) : {}).merge(@inputs)
     end
 
     def self.input priority, name, options={}
-      @inputs ||= []
-      @inputs << { priority: priority, name: name }.merge(options)
+      @inputs ||= {}
+      @inputs[name] = { priority: priority, name: name }.merge(options)
       define_method(name) do
         return (instance_variable_defined?("@#{name}".to_sym) ? instance_variable_get("@#{name}".to_sym) : nil)
       end
@@ -79,6 +79,7 @@ module Debconf
       errors = {}
       self.class.validators.each do |field, value|
         (template, validator) = value
+        next unless (self.class.inputs[field][:if].nil? or send(self.class.inputs[field][:if]))
         unless (send(validator, send(field)))
           errors[field] = template
         end
