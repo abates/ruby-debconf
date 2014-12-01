@@ -329,6 +329,32 @@ class ClientTest < MiniTest::Test
       end
     end
 
+    describe ":delete option" do
+      it "should clear the value in debconf if the input is set to delete" do
+        dialog_klass = Class.new(::Debconf::Dialog) do
+          input :critical, :input1, :delete => true
+        end
+
+        dialog = dialog_klass.new(title: 'my title')
+
+        @instream << '0 OK'
+        @instream << '0 OK'
+        @instream << '0 OK'
+        @instream << '0 value'
+        @instream << '0 OK'
+
+        @client.show_dialog(dialog, {})
+
+        @outstream.must_equal([
+          'TITLE my title',
+          'INPUT critical input1',
+          'GO',
+          'GET input1',
+          'SET input1 ',
+        ])
+      end
+    end
+
     describe ":if conditionals" do
       before do
         dialog_klass = Class.new(::Debconf::Dialog) do
@@ -351,6 +377,7 @@ class ClientTest < MiniTest::Test
         @instream << '0 value'
 
         @client.show_dialog(@dialog, {})
+
         @outstream.must_equal([
           'TITLE my title',
           'INPUT critical input1',

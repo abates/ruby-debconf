@@ -130,6 +130,7 @@ module Debconf
             receiver[prefixed_name] = get(prefixed_name)
             dialog.instance_variable_set("@#{name}".to_sym, value)
           end
+          set(prefixed_name, "") if (input[:delete])
         end
       end
       if (code == :skipped)
