@@ -54,22 +54,33 @@ class DialogTest < MiniTest::Test
     end
   end
 
-  # @todo must move this to wizard test
-=begin
-  def test_validations_not_called_on_canceled
-    driver = Debconf::Test::Driver.new
-    driver.debconf_stub.default_input_str = "30 backup"
-    driver.debconf_stub.input_values['input1'] = 'incorrect value'
+  describe "validation conditionals" do
+    before do
+      @dialog_klass = Class.new(Debconf::Dialog) do
+        attr_reader :oops
 
-    dialog = Dialog1.new
-    dialog.show(driver, {})
-    assert_equal(nil, dialog.seen)
+        input :critical, 'input1'
+        input :critical, 'input2', :if => Proc.new { false }
+        validate 'input1', 'input1_error', :input1_validator
 
-    assert_equal([
-      "TITLE Dialog Title", 
-      "INPUT critical input1", 
-      "GET input1"
-    ], driver.debconf_stub.rx_cmds)
+        def initialize
+          @oops = false
+        end
+
+        def input1_validator value
+          true
+        end
+
+        def input2_validator value
+          @oops = true
+        end
+      end
+    end
+
+    it "must not validate a field where the field conditional is false" do
+      dialog = @dialog_klass.new
+      dialog.valid?.must_equal(true)
+      dialog.oops.must_equal(false)
+    end
   end
-=end
 end
