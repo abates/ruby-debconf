@@ -15,29 +15,28 @@
 #
 module Debconf
   class Client
+    { 
+      capb: -1, 
+      settitle: 1, 
+      title: 1, 
+      stop: 0, 
+      clear: 0, 
+      subst: 3,
+      register: 2,
+      fset: 3
+    }.each do |meth, arity|
+      define_method(meth) do |*args|
+        if (arity == -1 or args.length == arity)
+          @driver.execute(meth.to_s.upcase, *args)
+        else
+          raise ArgumentError.new("wrong number of arguments (#{args.length} for #{arity})")
+        end
+      end
+    end
+
     def initialize(driver=nil)
       @driver = driver || Driver.new
-      capabilities('backup')
-    end
-
-    def capabilities(*capabilities)
-      (code, msg) = @driver.send('CAPB', *capabilities)
-      if (code == 0)
-        return :ok
-      end
-      raise "Error #{code}: #{msg}"
-    end
-
-    def settitle t
-      @driver.send("SETTITLE", t)
-    end
-
-    def title t
-      @driver.send("TITLE", t)
-    end
-
-    def stop
-      @driver.send("STOP")
+      capb('backup')
     end
 
     def input priority, question
@@ -59,11 +58,7 @@ module Debconf
     end
 
     def set question, value
-      (code, value) = @driver.send("SET #{question} #{value}")
-      if (code == 0)
-        return :ok
-      end
-      raise "Error #{code}: #{value}"
+      @driver.execute("SET #{question} #{value}")
     end
 
     def get question
@@ -85,41 +80,13 @@ module Debconf
         raise "Error #{code}: #{msg}"
       end
     end
-    
-    def clear
-      @driver.send("CLEAR")
-    end
-
-    def subst question, key, value
-      (retval, text) = @driver.send("SUBST", "#{question}", key, value)
-      if (retval == 0)
-        return :ok
-      end
-      raise "Error #{retval}: #{text}"
-    end
-
-    def register template, question
-      (retval, text) = @driver.send("REGISTER", "#{template}", "##{question}")
-      if (retval == 0)
-        return :ok
-      end
-      raise "Error #{retval}: #{text}"
-    end
-
-    def fset question, flag, value
-      (retval, text) = @driver.send("FSET", "#{question}", "#{flag}", "#{value}")
-      if (retval == 0)
-        return :ok
-      end
-      raise "Error #{retval}: #{text}"
-    end
 
     def show_dialog dialog, receiver
       code = nil
       title(dialog.title || dialog.class.title)
       dialog.class.inputs.each do |field, input|
         done = false
-        next unless (input[:if].nil? or send(input[:if]))
+        next unless (input[:if].nil? or dialog.send(input[:if]))
         while (! done)
           done = true
           priority = input[:priority]
@@ -148,10 +115,10 @@ module Debconf
           if (code == :ok)
             code = go
             if (code == :next)
-              dialog.send("#{name}=", value)
               value = get(prefixed_name)
+              dialog.send("#{name}=", value)
               if (dialog.respond_to?("#{name}_invalid?") && dialog.send("#{name}_invalid?"))
-                error_template = prefixed_attribute(dialog.class.validators[name][0])
+                error_template = dialog.prefixed_attribute(dialog.class.validators[name][0])
                 input('critical', error_template)
                 go
                 done = false

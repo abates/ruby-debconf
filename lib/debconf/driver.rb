@@ -54,6 +54,14 @@ module Debconf
       end
       return [status, text]
     end
+
+    def execute *args
+      (code, value) = send(*args)
+      if (code == 0)
+        return :ok
+      end
+      raise "Error #{code}: #{value}"
+    end
   end
 end
 
