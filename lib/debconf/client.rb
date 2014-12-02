@@ -58,11 +58,11 @@ module Debconf
     end
 
     def set question, value
-      @driver.execute("SET #{question} #{value}")
+      @driver.execute("SET", question.to_s, value.to_s)
     end
 
     def get question
-      (code, value) = @driver.send("GET #{question}")
+      (code, value) = @driver.send("GET", question.to_s)
       if (code == 0)
         return "#{value}"
       end
