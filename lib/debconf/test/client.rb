@@ -14,9 +14,14 @@
 # the License.
 #
 
-require "debconf"
-require "debconf/test/client"
-require "debconf/test/driver"
+require 'debconf'
+require 'debconf/test'
 
 module Debconf::Test
+  class Client < ::Debconf::Client
+    def initialize values={}
+      super(::Debconf::Test::Driver.new(values))
+    end
+  end
 end
+
