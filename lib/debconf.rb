@@ -17,6 +17,7 @@
 require "debconf/version"
 require "debconf/wizard"
 require "debconf/dialog"
+require "debconf/client"
 require "debconf/driver"
 require "debconf/step"
 
