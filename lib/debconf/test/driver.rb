@@ -19,10 +19,25 @@ require 'debconf/test'
 
 module Debconf::Test
   class Driver < ::Debconf::Driver
-    attr_reader :debconf_stub
-    def initialize
-      @debconf_stub = Stub.new
-      super(@debconf_stub, @debconf_stub)
+    def initialize values={}
+      @values = values
+    end
+
+    def send *args
+      code = []
+      case
+      when args[0] == 'GET'
+        code = [0, "#{values[args[1]]}"]
+      else
+        code = [0, 'OK']
+      end
+
+      return code
+    end
+
+    def receive
+      [0, 'OK']
     end
   end
 end
+
