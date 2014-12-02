@@ -56,12 +56,6 @@ module Debconf
       @transition_table
     end
 
-    def self.execute debconf_driver=nil
-      debconf_driver ||= Debconf::Driver.new
-      wizard = self.new
-      wizard.execute!(debconf_driver)
-    end
-
     def initialize
       @current_step = self.class.debconf_first_step
       @breadcrumbs = []
@@ -72,7 +66,6 @@ module Debconf
       @last_code = code
       previous_step = @current_step
       @current_step = self.class.transition_table[@current_step][code]
-      #@current_step = transition(code)
       if (self.class.transition_table[@current_step].nil?)
         case @current_step
         when :next
@@ -119,14 +112,20 @@ module Debconf
       @last_code
     end
 
-    private
-      def execute!
-        while (@current_step != :last)
-          dialog = self.class.steps[@current_step].dialog
-          code = @debconf_driver.show_dialog(dialog, self)
-          transition!(code)
-        end
-        @debconf_driver.stop
+    def execute client=nil
+      @current_step = self.class.debconf_first_step
+      @breadcrumbs = []
+      @config = {}
+
+      client ||= Debconf::Client.new
+      while (@current_step != :last)
+        dialog = self.class.steps[@current_step].dialog
+        code = client.show_dialog(dialog, self)
+        transition!(code)
       end
+      client.stop
+
+      return @config
+    end
   end
 end
