@@ -15,7 +15,6 @@
 #
 
 require "debconf"
-require "debconf/test/stub"
 require "debconf/test/driver"
 
 module Debconf::Test
