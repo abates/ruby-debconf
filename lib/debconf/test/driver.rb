@@ -27,16 +27,12 @@ module Debconf::Test
       code = []
       case
       when args[0] == 'GET'
-        code = [0, "#{values[args[1]]}"]
+        code = [0, "#{@values[args[1]]}"]
       else
         code = [0, 'OK']
       end
 
       return code
-    end
-
-    def receive
-      [0, 'OK']
     end
   end
 end
