@@ -76,4 +76,100 @@ class WizardTest < MiniTest::Test
       @wizard['test/step2/input2'].must_equal('4')
     end
   end
+
+  describe "executing a wizard" do
+    before do
+      step1_klass = Class.new(Debconf::Dialog) do
+        input :critical, 'step1_input1'
+        input :critical, 'step1_input2'
+      end
+
+      step2_klass = Class.new(Debconf::Dialog) do
+        input :critical, 'step2_input1'
+        input :critical, 'step2_input2'
+      end
+
+      wizard_klass = Class.new(Debconf::Wizard) do
+        sequence do
+          step(:step1) do |step|
+            step.dialog(step1_klass.new)
+            step.on(:next, :step2)
+            step.on(:ok, :step2)
+          end
+
+          step(:step2) do |step|
+            step.dialog(step2_klass.new)
+            step.on(:next, :step3)
+            step.on(:previous, :step1)
+          end
+
+          step(:step3) do |step|
+            step.dialog(step2_klass.new(prefix: 'step3'))
+            step.on(:next, :last)
+            step.on(:previous, :step2)
+          end
+        end
+      end
+
+      @wizard = wizard_klass.new
+    end
+
+    it "should ask each question and save the input" do
+      config = @wizard.execute(Debconf::Test::Client.new({
+        'step1_input1' => 'input1.1',
+        'step1_input2' => 'input1.2',
+        'step2_input1' => 'input2.1',
+        'step2_input2' => 'input2.2'
+      }))
+
+      config.must_equal({
+        'step1_input1' => 'input1.1',
+        'step1_input2' => 'input1.2',
+        'step2_input1' => 'input2.1',
+        'step2_input2' => 'input2.2',
+        'step3' => {
+          'step2_input1' => '',
+          'step2_input2' => ''
+        }
+      })
+    end
+
+    it "should track the current path in the wizard using breadcrumbs" do
+      @wizard.transition!(:next)
+      @wizard.transition!(:next)
+      @wizard.breadcrumbs.must_equal([:step1, :step2])
+      @wizard.current_step.must_equal(:step3)
+
+      @wizard.transition!(:previous)
+      @wizard.breadcrumbs.must_equal([:step1])
+      @wizard.transition!(:previous)
+      @wizard.breadcrumbs.must_equal([])
+    end
+
+    it "should have meta-transitions of next, last and previous" do
+      wizard_klass = Class.new(Debconf::Wizard) do
+        sequence do
+          step(:step1) do |step|
+            step.on(:next, :next)
+            step.on(:previous, :last)
+          end
+
+          step(:step2) do |step|
+            step.on(:next, :last)
+            step.on(:previous, :previous)
+          end
+        end
+      end
+
+      wizard = wizard_klass.new
+      wizard.transition!(:next)
+      wizard.current_step.must_equal(:step2)
+
+      wizard.transition!(:previous)
+      wizard.current_step.must_equal(:step1)
+
+      wizard.transition!(:previous)
+      wizard.current_step.must_equal(:last)
+    end
+  end
 end
